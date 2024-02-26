@@ -50,7 +50,9 @@ def flip(tile)
        flipped_tile
 end
 
+def does_overlap(grid, tile_two)
 
+end
 
 def brute_force(grid, tile, row, col)
         tiles_placed = 0
