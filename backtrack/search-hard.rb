@@ -8,11 +8,11 @@ GRID_ROW        = 5
 =end
 
 # These tiles are defined in a 3x3 grid
-x_tile = [[0,1,0], [1,1,1], [0,1,1]]
+x_tile = [[0,1,0], [1,1,1], [0,1,0]]
 zzag_tile = [[2,0,0],[2,2,0],[0,2,2]]
 short_L_tile = [[0,0,0],[0,0,3],[3,3,3]]
 lshort_L_tile = [[0,0,4],[0,0,4],[4,4,4]]
-cube_tile = [[0,0,0],[0,5,5],[0,5,5]]
+cube_tile = [[5,5,0],[5,5,0],[0,0,0]]
 cube_s_tile = [[0,0,6],[0,6,6],[0,6,6]]
 m_tile = [[0,7,7],[0,7,0],[0,7,7]]
 small_L_tile = [[0,0,0],[0,8,0],[0,8,8]]
@@ -23,7 +23,7 @@ stick_tile = [[10,0,0,0],[10,0,0,0],[10,0,0,0],[10,0,0,0]]
 long_L_tile = [[11,0,0,0],[11,0,0,0],[11,0,0,0],[11,11,0,0]]
 curve_L_tile = [[0,12,0,0],[12,12,0,0],[12,0,0,0],[12,0,0,0]]
 
-puzzle_tiles = [x_tile, zzag_tile, short_L_tile, lshort_L_tile, cube_tile, cube_s_tile, m_tile, 
+puzzle_tiles = [zzag_tile, short_L_tile, lshort_L_tile, cube_tile, cube_s_tile, m_tile, 
 small_L_tile, mosin_tile, stick_tile, long_L_tile, curve_L_tile]
 
 # Will rotate tile based off a mix of rotate transpose and reverse
@@ -50,9 +50,9 @@ end
 
 def place(grid, tile, row, col)
         new_grid = grid.map(&:clone)
-        tile.each do | r |
-                tile[r].each do | c |
-                        new_grid[r+row][c+col] = tile[r][c]
+        tile.each_with_index do | r, x |
+                r.each_with_index do | c, y |
+                        new_grid[x+row][y+col] = c
                 end
         end
         return new_grid
@@ -60,11 +60,11 @@ end
 
 def does_overlap(grid, tile, row, col)
         
-        tile.each do | r |
-                tile[r].each do | c |
+        tile.each_with_index do | r, x |
+                r.each_with_index do | c, y |
                         # Checks if the relative position of tile
                         # and global position of grid is occupied 
-                        if tile[r][c] != 0 and grid[r+row][c+col] != 0
+                        if c != 0 and grid[x+row][y+col] != 0
                                 false
                         end
                 end
@@ -85,9 +85,9 @@ def isinvalid(row, col)
 end
 
 def out_of_bounds(grid, tile, row, col)
-        tile.each do | r |
-                tile[r].each do | c |
-                        false if tile[r][c] != 0 and isinvalid(r+row, c+col)
+        tile.each_with_index do | r, x |
+                r.each_with_index do | c, y |
+                        false if c != 0 and isinvalid(x+row, y+col)
                 end
         end
 
@@ -124,9 +124,10 @@ def find_free_space(grid, row, col)
      
      # Using map_tile, we will check every direction for each position to
      # see if there is free space adjacent to the current tile
-     tile_nume = grid[row][col]
+     tile_num = grid[row][col]
      free_tiles = []
      for r, c in map_tile(grid, row, col, tile_num)
+               next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
                        next if isinvalid(pr, pc) or grid[pr][pc] != 0
@@ -138,17 +139,14 @@ def find_free_space(grid, row, col)
 end
 
 
-def backtrack(grid, n, row, col)
+def backtrack(array, grid, n, row, col)
 
         # Should return the grid if we've explored all puzzle pieces for this path
-        if n == puzzle_tiles.length
+        if n == array.length
                 return grid
         end
-
-        row_col = find_free_space(grid, row, col) 
-
         # Update the grid without the selected tilepiece
-        puzzle_tiles.slice(n, -1).each do | jigsaw |
+        array.drop(n).each do | jigsaw |
               piece = jigsaw.map(&:clone)
               # There's going to be another type of iterator to go through
               # All the adjacent free spaces of the current tile we are on
@@ -160,8 +158,8 @@ def backtrack(grid, n, row, col)
                                
                                if not out_of_bounds(grid, piece, r, c)
                                       if not does_overlap(grid, piece, r, c)
-                                                # Place the piece
-                                                # increment n
+                                                place(grid, piece, r, c)
+                                                n =+ 1
                                                 return backtrack(grid, n, r, c)
                                       end
                                end
@@ -186,7 +184,8 @@ end
 
 
 # Start off with an empty grid of 11 columns per row
-grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN) }
-
+grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
+grid = place(grid, x_tile, 0, 0)
 # Provide an initial piece and place it anywhere within the grid
-p backtrack(grid,0, row, col)
+print backtrack(puzzle_tiles, grid,0, 0, 0)
+print "Finished"
