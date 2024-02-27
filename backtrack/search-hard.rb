@@ -5,8 +5,8 @@ GRID_ROW        = 5
 =begin
         There are 8 pieces that can be defined in a 3x3 grid
         there are 4 pieces that can be defined in a 2x4 grid
-
 =end
+
 # These tiles are defined in a 3x3 grid
 x_tile = [[0,1,0], [1,1,1], [0,1,1]]
 zzag_tile = [[2,0,0],[2,2,0],[0,2,2]]
@@ -73,25 +73,70 @@ def does_overlap(grid, tile, row, col)
         true
 end
 
-def out_of_bounds(grid, tile, row, col)
-        grid_row = grid.length
-        grid_col = grid[0].length
-
+def isinvalid(row, col)
+        grid_row = GRID_ROW
+        grid_col = GRID_COLUMN
         if row < grid_row or row > grid_row or
         col < grid_col or col > grid_col
-                false
+               true 
         end
+
+        false
+end
+
+def out_of_bounds(grid, tile, row, col)
+        tile.each do | r |
+                tile[r].each do | c |
+                        false if tile[r][c] != 0 and isinvalid(r+row, c+col)
+                end
+        end
+
         true
 end
 
-def find_free_space(grid, row, col)
+# Where are all the tiles pieces on the grid? this will help determine the free spaces
+def map_tile(grid, row, col, tile_num)
         # Determine which tile we are one, this is easy because every tile is represented with a different
         # number
-        
-       
+        if isinvalid(row, col)
+                return []
+        end
 
-        return r, c # Returns an array of two elements representing or row col
+        if grid[row][col] != tile_num
+                return []
+        else
+                return [row, col]
+        end
+        
+        # Returns an array of two elements representing or row col
+        return [] + [find_free_space(grid, row+1, col, tile_num)] 
+        + [find_free_space(grid, row, col+1, tile_num)]
+        + [find_free_space(grid, row+1, col+1, tile_num)]
+        + [find_free_space(grid, row-1, col-1, tile_num)]
+        + [find_free_space(grid, row, col-1, tile_num)]
+        + [find_free_space(grid, row-1, col, tile_num)]
+        + [find_free_space(grid, row+1, col-1, tile_num)]
+        + [find_free_space(grid, row-1, col+1, tile_num)]
+        + [find_free_space(grid, row, col, tile_num)]
 end
+
+def find_free_space(grid, row, col)
+     
+     # Using map_tile, we will check every direction for each position to
+     # see if there is free space adjacent to the current tile
+     tile_nume = grid[row][col]
+     free_tiles = []
+     for r, c in map_tile(grid, row, col, tile_num)
+               potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
+               for pr, pc in potential_spots
+                       next if isinvalid(pr, pc) or grid[pr][pc] != 0
+                       free_tiles += [[pc, pr]]
+               end
+     end
+
+     return free_tiles
+end
+
 
 def backtrack(grid, n, row, col)
 
