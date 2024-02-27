@@ -76,11 +76,9 @@ end
 def isinvalid(row, col)
         grid_row = GRID_ROW
         grid_col = GRID_COLUMN
-        if row < grid_row or row > grid_row or
-        col < grid_col or col > grid_col
-               true 
+        if row > grid_row or row < 0 or col > grid_col or col < 0 
+               return true
         end
-
         false
 end
 
@@ -94,24 +92,6 @@ def out_of_bounds(grid, tile, row, col)
         true
 end
 
-# Where are all the tiles pieces on the grid? this will help determine the free spaces
-def map_tile(grid, row, col, tile_num)
-        # Determine which tile we are one, this is easy because every tile is represented with a different
-        # number
-        if isinvalid(row, col)
-                return []
-        end
-        if grid[row][col] != tile_num
-                return []
-        end
-
-
-        # Returns an array of two elements representing or row col
-        return [[row, col]] + map_tile(grid, row+1, col, tile_num) + 
-        map_tile(grid, row+1, col+1, tile_num) +
-        map_tile
-end
-
 def find_free_space(grid, row, col, piece)
      
      # Using map_tile, we will check every direction for each position to
@@ -119,31 +99,26 @@ def find_free_space(grid, row, col, piece)
      
      # Find a way to locate our tile, center the row and col to any point of our tile
      # screw you
-     found = 0 
+     piece_true_pos = []
      piece.each_with_index do |x, r|
-        break if found == 1
         x.each_with_index do |y, c|
                 if y != 0
-                        tile_num = y
-                        row += r
-                        col += c
-                        found = 1
+                        piece_true_pos << [row+r, col+c]
                 end
         end
      end
 
      free_tiles = []
-     print map_tile(grid, row, col, tile_num)
-     exit
-     for r, c in map_tile(grid, row, col, tile_num)
+     for r, c in piece_true_pos
                next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
                        next if isinvalid(pr, pc) or grid[pr][pc] != 0
-                       free_tiles += [[pc, pr]]
+                       free_tiles << [pc, pr]
                end
      end
-
+     print free_tiles
+     exit
      return free_tiles
 end
 
