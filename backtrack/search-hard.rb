@@ -101,15 +101,12 @@ def map_tile(grid, row, col, tile_num)
         if isinvalid(row, col)
                 return []
         end
-
         if grid[row][col] != tile_num
                 return []
-        else
-                return [row, col]
-        end
+        end 
         
         # Returns an array of two elements representing or row col
-        return [] + [find_free_space(grid, row+1, col, tile_num)] 
+        return [row, col] + [find_free_space(grid, row+1, col, tile_num)] 
         + [find_free_space(grid, row, col+1, tile_num)]
         + [find_free_space(grid, row+1, col+1, tile_num)]
         + [find_free_space(grid, row-1, col-1, tile_num)]
@@ -120,11 +117,33 @@ def map_tile(grid, row, col, tile_num)
         + [find_free_space(grid, row, col, tile_num)]
 end
 
-def find_free_space(grid, row, col)
+def find_free_space(grid, row, col, piece)
      
      # Using map_tile, we will check every direction for each position to
      # see if there is free space adjacent to the current tile
-     tile_num = grid[row][col]
+     
+     # Find a way to locate our tile, center the row and col to any point of our tile
+     # screw you
+     tile_num = 0
+     print piece
+     piece.each do |x|
+        x.each do |y|
+                if y != 0
+                        tile_num = y
+                end
+        end
+     end
+     
+     # change this later so you can recalibrate where your tile piece actual is in the grid space
+     grid.each_with_index do |x, sigma|
+        x.each_with_index do |y, beta|
+                if y == tile_num
+                        row = sigma
+                        col = beta
+                end
+        end
+     end
+ 
      free_tiles = []
      for r, c in map_tile(grid, row, col, tile_num)
                next if r == nil or c == nil
@@ -139,7 +158,7 @@ def find_free_space(grid, row, col)
 end
 
 
-def backtrack(array, grid, n, row, col)
+def backtrack(array, grid, n, row, col, initial_piece)
 
         # Should return the grid if we've explored all puzzle pieces for this path
         if n == array.length
@@ -150,7 +169,7 @@ def backtrack(array, grid, n, row, col)
               piece = jigsaw.map(&:clone)
               # There's going to be another type of iterator to go through
               # All the adjacent free spaces of the current tile we are on
-              position_list = find_free_space(grid, row, col)
+              position_list = find_free_space(grid, row, col, initial_piece)
               for r, c in position_list
                        rotation_count = 0
                        flipped = false
@@ -160,7 +179,8 @@ def backtrack(array, grid, n, row, col)
                                       if not does_overlap(grid, piece, r, c)
                                                 place(grid, piece, r, c)
                                                 n =+ 1
-                                                return backtrack(grid, n, r, c)
+                                                print "tequila sunrise"
+                                                return backtrack(grid, n, r, c, piece)
                                       end
                                end
 
@@ -187,5 +207,5 @@ end
 grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
 grid = place(grid, x_tile, 0, 0)
 # Provide an initial piece and place it anywhere within the grid
-print backtrack(puzzle_tiles, grid,0, 0, 0)
+print backtrack(puzzle_tiles, grid,0, 0, 0, x_tile)
 print "Finished"
