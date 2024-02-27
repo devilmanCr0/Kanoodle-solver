@@ -109,16 +109,17 @@ def find_free_space(grid, row, col, piece)
      end
 
      free_tiles = []
+     # This logic will produce duplicate positions that are unecessary, please fix somehow
+     already_checked = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
      for r, c in piece_true_pos
                next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
-                       next if isinvalid(pr, pc) or grid[pr][pc] != 0
+                       next if isinvalid(pr, pc) or grid[pr][pc] != 0 or already_checked[pc][pr] == 1
                        free_tiles << [pc, pr]
+                       already_checked[pc][pr] = 1 # Marked discovered
                end
      end
-     print free_tiles
-     exit
      return free_tiles
 end
 
