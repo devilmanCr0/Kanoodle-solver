@@ -103,18 +103,13 @@ def map_tile(grid, row, col, tile_num)
         end
         if grid[row][col] != tile_num
                 return []
-        end 
-        
+        end
+
+
         # Returns an array of two elements representing or row col
-        return [row, col] + [find_free_space(grid, row+1, col, tile_num)] 
-        + [find_free_space(grid, row, col+1, tile_num)]
-        + [find_free_space(grid, row+1, col+1, tile_num)]
-        + [find_free_space(grid, row-1, col-1, tile_num)]
-        + [find_free_space(grid, row, col-1, tile_num)]
-        + [find_free_space(grid, row-1, col, tile_num)]
-        + [find_free_space(grid, row+1, col-1, tile_num)]
-        + [find_free_space(grid, row-1, col+1, tile_num)]
-        + [find_free_space(grid, row, col, tile_num)]
+        return [[row, col]] + map_tile(grid, row+1, col, tile_num) + 
+        map_tile(grid, row+1, col+1, tile_num) +
+        map_tile
 end
 
 def find_free_space(grid, row, col, piece)
@@ -124,27 +119,22 @@ def find_free_space(grid, row, col, piece)
      
      # Find a way to locate our tile, center the row and col to any point of our tile
      # screw you
-     tile_num = 0
-     print piece
-     piece.each do |x|
-        x.each do |y|
+     found = 0 
+     piece.each_with_index do |x, r|
+        break if found == 1
+        x.each_with_index do |y, c|
                 if y != 0
                         tile_num = y
+                        row += r
+                        col += c
+                        found = 1
                 end
         end
      end
-     
-     # change this later so you can recalibrate where your tile piece actual is in the grid space
-     grid.each_with_index do |x, sigma|
-        x.each_with_index do |y, beta|
-                if y == tile_num
-                        row = sigma
-                        col = beta
-                end
-        end
-     end
- 
+
      free_tiles = []
+     print map_tile(grid, row, col, tile_num)
+     exit
      for r, c in map_tile(grid, row, col, tile_num)
                next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
