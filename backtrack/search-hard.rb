@@ -1,4 +1,4 @@
-
+require "pry-byebug"
 GRID_COLUMN     = 11
 GRID_ROW        = 5
 
@@ -63,33 +63,36 @@ def does_overlap(grid, tile, row, col)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
                         # Checks if the relative position of tile
-                        # and global position of grid is occupied 
+                        # and global position of grid is occupied
+                        # dirty bug here
+                        #binding.pry
                         if c != 0 and grid[x+row][y+col] != 0
-                                false
+                                return true
                         end
                 end
         end
 
-        true
+        false
 end
 
 def isinvalid(row, col)
         grid_row = GRID_ROW
         grid_col = GRID_COLUMN
-        if row > grid_row or row < 0 or col > grid_col or col < 0 
+        #binding.pry if row == 5
+        if row >= grid_row or row < 0 or col >= grid_col or col < 0 
                return true
         end
-        false
+        return false
 end
 
 def out_of_bounds(grid, tile, row, col)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
-                        false if c != 0 and isinvalid(x+row, y+col)
+                        return true if isinvalid(x+row, y+col)
                 end
         end
 
-        true
+        return false
 end
 
 def find_free_space(grid, row, col, piece)
@@ -115,9 +118,9 @@ def find_free_space(grid, row, col, piece)
                next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
-                       next if isinvalid(pr, pc) or grid[pr][pc] != 0 or already_checked[pc][pr] == 1
+                       next if isinvalid(pr, pc) or grid[pr][pc] != 0 or already_checked[pr][pc] == 1
                        free_tiles << [pc, pr]
-                       already_checked[pc][pr] = 1 # Marked discovered
+                       already_checked[pr][pc] = 1 # Marked discovered
                end
      end
      return free_tiles
@@ -140,13 +143,12 @@ def backtrack(array, grid, n, row, col, initial_piece)
                        rotation_count = 0
                        flipped = false
                        while rotation_count < 4
-                               
                                if not out_of_bounds(grid, piece, r, c)
                                       if not does_overlap(grid, piece, r, c)
                                                 place(grid, piece, r, c)
                                                 n =+ 1
                                                 print "tequila sunrise"
-                                                return backtrack(grid, n, r, c, piece)
+                                                return backtrack(array, grid, n, r, c, piece)
                                       end
                                end
 
