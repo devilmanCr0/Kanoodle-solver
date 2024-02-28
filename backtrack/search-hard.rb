@@ -1,4 +1,5 @@
 require "pry-byebug"
+require "pry-rescue"
 GRID_COLUMN     = 11
 GRID_ROW        = 5
 
@@ -26,6 +27,14 @@ curve_L_tile = [[0,12,0,0],[12,12,0,0],[12,0,0,0],[12,0,0,0]]
 puzzle_tiles = [zzag_tile, short_L_tile, lshort_L_tile, cube_tile, cube_s_tile, m_tile, 
 small_L_tile, mosin_tile, stick_tile, long_L_tile, curve_L_tile]
 
+def print_matrix(matrix)
+        for i in matrix
+                p i
+        end
+
+        p "------------------"
+end
+
 # Will rotate tile based off a mix of rotate transpose and reverse
 def rotate_tile(tile)
         # annaershova.github.io/blog/2015/07/22/how-to-rotate-a-matrix-in-ruby/
@@ -49,13 +58,13 @@ def flip(tile)
 end
 
 def place(grid, tile, row, col)
-        new_grid = grid.map(&:clone)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
-                        new_grid[x+row][y+col] = c
+                        next if c == 0
+                        grid[x+row][y+col] = c
                 end
         end
-        return new_grid
+        return grid
 end
 
 def does_overlap(grid, tile, row, col)
@@ -65,7 +74,6 @@ def does_overlap(grid, tile, row, col)
                         # Checks if the relative position of tile
                         # and global position of grid is occupied
                         # dirty bug here
-                        #binding.pry
                         if c != 0 and grid[x+row][y+col] != 0
                                 return true
                         end
@@ -78,7 +86,6 @@ end
 def isinvalid(row, col)
         grid_row = GRID_ROW
         grid_col = GRID_COLUMN
-        #binding.pry if row == 5
         if row >= grid_row or row < 0 or col >= grid_col or col < 0 
                return true
         end
@@ -131,42 +138,57 @@ def backtrack(array, grid, n, row, col, initial_piece)
 
         # Should return the grid if we've explored all puzzle pieces for this path
         if n == array.length
-                return grid
+                return [grid, n]
         end
+
         # Update the grid without the selected tilepiece
         array.drop(n).each do | jigsaw |
               piece = jigsaw.map(&:clone)
               # There's going to be another type of iterator to go through
               # All the adjacent free spaces of the current tile we are on
               position_list = find_free_space(grid, row, col, initial_piece)
+              potential_paths = []
               for r, c in position_list
                        rotation_count = 0
                        flipped = false
                        while rotation_count < 4
+                               # We need to figure out a way to recalibrate the piece so that
+                               # it's exactly on the free spot point, shift left right top down whatever
+                               # Everything will crumble if it can't close the spaces together
                                if not out_of_bounds(grid, piece, r, c)
                                       if not does_overlap(grid, piece, r, c)
+                                                # CHANGE THIS 
                                                 place(grid, piece, r, c)
                                                 n =+ 1
-                                                print "tequila sunrise"
-                                                return backtrack(array, grid, n, r, c, piece)
+
+                                                # This recurrence is wrong, it should return the longest path with the 
+                                                # most pieces used
+                                                potential_paths << backtrack(array, grid, n, r, c, piece).map(&:clone)
                                       end
                                end
 
                                rotation_count += 1
                                if rotation_count == 4 and not flipped
                                        rotation_count = 0
-                                       # flip here
+                                       piece = flip piece
                                        flipped = !flipped
                                end
 
-                               # rotate piece
+                               piece = rotate_tile piece
                        end
+
                        # If we reach here, that means we have not found an optimal grid, so return nada
                        #return []
                end
+               potential_max = potential_paths[0] if potential_paths != 0 else [][0]
+               potential_paths.each do | possible_grid |
+                        potential_max = possible_grid if possible_grid[1] > potential_max[1]
+               end
+
+               grid = potential_max
         end
         
-        return grid
+        return [grid, n]
 end
 
 
@@ -175,5 +197,5 @@ end
 grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
 grid = place(grid, x_tile, 0, 0)
 # Provide an initial piece and place it anywhere within the grid
-print backtrack(puzzle_tiles, grid,0, 0, 0, x_tile)
+print_matrix backtrack(puzzle_tiles, grid,0, 0, 0, x_tile)[0]
 print "Finished"
