@@ -1,5 +1,5 @@
-#require "pry-byebug"
-require "pry-rescue"
+require "pry-byebug"
+#require "pry-rescue"
 GRID_COLUMN     = 11
 GRID_ROW        = 5
 
@@ -24,8 +24,6 @@ stick_tile = [[10,0,0,0],[10,0,0,0],[10,0,0,0],[10,0,0,0]]
 long_L_tile = [[11,0,0,0],[11,0,0,0],[11,0,0,0],[11,11,0,0]]
 curve_L_tile = [[0,12,0,0],[12,12,0,0],[12,0,0,0],[12,0,0,0]]
 
-puzzle_tiles = [zzag_tile, short_L_tile, lshort_L_tile, cube_tile, cube_s_tile, m_tile, 
-small_L_tile, mosin_tile, stick_tile, long_L_tile, curve_L_tile]
 
 def print_matrix(matrix)
         for i in matrix
@@ -175,7 +173,7 @@ def find_free_space(grid, row, col)
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
                        next if isinvalid(pr, pc) or grid[pr][pc] != 0 or already_checked[pr][pc] == 1
-                       free_tiles << [pc, pr]
+                       free_tiles << [pr, pc]
                        already_checked[pr][pc] = 1 # Marked discovered
                end
      end
@@ -183,9 +181,10 @@ def find_free_space(grid, row, col)
 end
 
 def backtrack(array, grid, n, row, col)
-
+        print n
         # Should return the grid if we've explored all puzzle pieces for this path
-        if n == array.length
+        if n == array.length # FIX LIMIT
+                print "it's done"
                 return [grid, n]
         end
 
@@ -197,8 +196,10 @@ def backtrack(array, grid, n, row, col)
               # It shouldn't be just free space from the previous tile, but all of them
               position_list = find_free_space(grid, row, col)
               potential_paths = []
+
               for r, c in position_list
                        potential_placement = []
+                       #binding.pry if piece[2][0] == 4
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
                                flipped = false
@@ -224,7 +225,6 @@ def backtrack(array, grid, n, row, col)
                                        # Everything will crumble if it can't close the spaces together
                                        if not out_of_bounds(grid, readjusted_piece, r, c)
                                               if not does_overlap(grid, readjusted_piece, r, c)
-                                                        binding.pry
                                                         potential_placement << place(grid, readjusted_piece, r, c)
                                               end
                                        end
@@ -255,18 +255,26 @@ def backtrack(array, grid, n, row, col)
                potential_paths.each do | possible_grid |
                         potential_max = possible_grid if possible_grid[1] > potential_max[1]
                end
-
+               
+                
                grid = potential_max[0]
         end
-        
+
+        #binding.pry
         return [grid, n]
 end
 
-
-
 # Start off with an empty grid of 11 columns per row
 grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
-grid = place(grid, x_tile, 0, 0)
+grid = [[12, 12, 4, 4,  4, 10, 10, 10, 10, 7, 7],
+        [3, 12, 12, 12, 4, 11, 0,   0, 0,  0, 7],
+        [3, 3,  3,   1, 4, 11, 0,   0, 0,  7, 7],
+        [6, 6,  1,   1, 1, 11, 0,   0, 0,  0, 0],
+        [6, 6,  6,   1, 11, 11, 0,  0, 0,  0, 0]] 
+
+puzzle_tiles = [curve_L_tile, short_L_tile, lshort_L_tile, cube_s_tile,
+x_tile, long_L_tile, stick_tile, m_tile, mosin_tile, zzag_tile, small_L_tile, cube_tile ]
+
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles, grid,0, 0, 0)[0]
+print_matrix backtrack(puzzle_tiles, grid, 8, 0, 0)[0]
 print "Finished"
