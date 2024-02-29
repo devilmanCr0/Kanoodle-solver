@@ -193,6 +193,7 @@ def backtrack(array, grid, row, col)
               position_list = find_free_space(grid)
               potential_paths = []
               for r, c in position_list
+                       binding.pry if r == 1 and c == 6
                        potential_placement = []
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
@@ -258,20 +259,21 @@ def backtrack(array, grid, row, col)
                         potential_max = possible_grid if possible_grid[1].length < potential_max[1].length
                end
                
-               max << potential_max
-               #binding.pry
-        end
-        
-        absolute_max = [grid, array ] # could be a problem
+               
 
+               #grid = potential_max[0]
+               #array = potential_max[1]
+               max << potential_max
+        end
+         
+        absolute_max = [ grid, array ] 
         max.each do | maxest |
                absolute_max = maxest if maxest[1].length < absolute_max[1].length 
         end
         
         grid = absolute_max[0]
         array = absolute_max[1]
-
-
+        
         return [grid, array]
 end
 
@@ -297,8 +299,22 @@ grid1 = [[2, 2,  3,   3,  3, 0, 0, 0, 0, 0, 0],
         # Difficult
 puzzle_tiles1 = [long_L_tile, lshort_L_tile, curve_L_tile, cube_tile, m_tile, x_tile ]
 
+
+        # Difficult
+grid3 =[[2, 2,  3,   3,  3, 7, 7, 0,  0,  0, 0],
+        [9, 2,  2,   8,  3, 7, 0, 0,  0,  0, 0],
+        [9, 9,  2,   8,  8, 7, 7, 0,  0,  0, 0],
+        [9, 6,  6,   6, 11, 11,11,11, 0,  0, 0],
+        [9, 6,  6,  10, 10, 10,10,11, 0,  0, 0]] 
+
+        # Difficult
+puzzle_tiles3 = [x_tile, lshort_L_tile, curve_L_tile, cube_tile]
+
+
+
+
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
+print_matrix backtrack(puzzle_tiles3, grid3, 0, 0)[0]
 print "Finished"
 
 
