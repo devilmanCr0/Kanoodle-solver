@@ -1,4 +1,4 @@
-require "pry-byebug"
+#require "pry-byebug"
 require "pry-rescue"
 GRID_COLUMN     = 11
 GRID_ROW        = 5
@@ -43,7 +43,7 @@ def rotate_tile(tile)
                 rotated_tile << x.reverse
         end
 
-        rotated_tile
+        return rotated_tile
 end
 
 # Will flip a tile 
@@ -54,17 +54,18 @@ def flip(tile)
                 flipped_tile << x.reverse
        end
 
-       flipped_tile
+       return flipped_tile
 end
 
 def place(grid, tile, row, col)
+        new_grid = grid.map(&:clone)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
                         next if c == 0
-                        grid[x+row][y+col] = c
+                        new_grid[x+row][y+col] = c
                 end
         end
-        return grid
+        return new_grid
 end
 
 def does_overlap(grid, tile, row, col)
@@ -102,13 +103,7 @@ def out_of_bounds(grid, tile, row, col)
         return false
 end
 
-def find_free_space(grid, row, col, piece)
-     
-     # Using map_tile, we will check every direction for each position to
-     # see if there is free space adjacent to the current tile
-     
-     # Find a way to locate our tile, center the row and col to any point of our tile
-     # screw you
+def map_tiles(row, col, piece)
      piece_true_pos = []
      piece.each_with_index do |x, r|
         x.each_with_index do |y, c|
@@ -117,7 +112,62 @@ def find_free_space(grid, row, col, piece)
                 end
         end
      end
+     return piece_true_pos
+end
 
+def map_all_tiles(grid)
+         all_positions = []
+         # binding.pry
+         grid.each_with_index do | x , r|
+                x.each_with_index do | y , c |
+                      if y != 0
+                                all_positions << [ r, c ]
+                      end
+                end
+         end
+
+         return all_positions
+end
+
+def adjust(piece, r, c, pr, pc)
+        new_piece = Array.new(piece.length) { Array.new(piece[0].length, 0) }
+        if r == pr and c == pc
+                return new_piece
+        end
+        # Need to subtract or add depending on direction
+        
+        difference_r = pr-r         
+        difference_c = pc-c
+        piece.each_with_index do | x, xr |
+                x.each_with_index do | y, yc |
+                        next if y == 0
+                        
+                        calc_x = xr - difference_r
+                        calc_y = yc - difference_c
+                        
+                        check_bounds1 = (calc_x > new_piece.length or calc_x < 0)
+                        check_bounds2 = (calc_y > new_piece[0].length or calc_y < 0)
+                        return [] if check_bounds1 or check_bounds2
+                        
+                        new_piece[calc_x][calc_y] = y
+
+                end
+        end
+
+        
+        return new_piece
+end
+
+def find_free_space(grid, row, col)
+     
+     # Using map_tile, we will check every direction for each position to
+     # see if there is free space adjacent to the current tile
+     
+     piece_true_pos = map_all_tiles(grid)
+
+     # Find a way to locate our tile, center the row and col to any point of our tile
+     # screw you
+     
      free_tiles = []
      # This logic will produce duplicate positions that are unecessary, please fix somehow
      already_checked = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
@@ -134,7 +184,7 @@ def find_free_space(grid, row, col, piece)
 end
 
 
-def backtrack(array, grid, n, row, col, initial_piece)
+def backtrack(array, grid, n, row, col)
 
         # Should return the grid if we've explored all puzzle pieces for this path
         if n == array.length
@@ -146,46 +196,60 @@ def backtrack(array, grid, n, row, col, initial_piece)
               piece = jigsaw.map(&:clone)
               # There's going to be another type of iterator to go through
               # All the adjacent free spaces of the current tile we are on
-              position_list = find_free_space(grid, row, col, initial_piece)
+              # It shouldn't be just free space from the previous tile, but all of them
+              position_list = find_free_space(grid, row, col)
               potential_paths = []
               for r, c in position_list
-                       rotation_count = 0
-                       flipped = false
-                       while rotation_count < 4
-                               # We need to figure out a way to recalibrate the piece so that
-                               # it's exactly on the free spot point, shift left right top down whatever
-                               # Everything will crumble if it can't close the spaces together
-                               if not out_of_bounds(grid, piece, r, c)
-                                      if not does_overlap(grid, piece, r, c)
-                                                # CHANGE THIS 
-                                                place(grid, piece, r, c)
-                                                n =+ 1
+                       potential_placement = []
+                       for pr, pc in map_tiles(r, c, piece)
+                               rotation_count = 0
+                               flipped = false
+                               while rotation_count < 4
+                                       
+                                       # Fix tile position to be as adjacent as possible with the prev tile
+                                       readjusted_piece = adjust(piece, r, c, pr, pc) 
+                                       if readjusted_piece == []
+                                                break
+                                       end
 
-                                                # This recurrence is wrong, it should return the longest path with the 
-                                                # most pieces used
-                                                potential_paths << backtrack(array, grid, n, r, c, piece).map(&:clone)
-                                      end
+                                       # We need to figure out a way to recalibrate the piece so that
+                                       # it's exactly on the free spot point, shift left right top down whatever
+                                       # Everything will crumble if it can't close the spaces together
+                                       if not out_of_bounds(grid, readjusted_piece, r, c)
+                                              if not does_overlap(grid, readjusted_piece, r, c)
+                                                        binding.pry
+                                                        potential_placement << place(grid, readjusted_piece, r, c)
+                                              end
+                                       end
+
+                                       rotation_count += 1
+                                       if rotation_count == 4 and not flipped
+                                               rotation_count = 0
+                                               piece = flip piece
+                                               flipped = true 
+                                               next
+                                       end
+
+                                       piece = rotate_tile piece
                                end
 
-                               rotation_count += 1
-                               if rotation_count == 4 and not flipped
-                                       rotation_count = 0
-                                       piece = flip piece
-                                       flipped = !flipped
-                               end
+                               # If we reach here, that means we have not found an optimal grid, so return nada
+                               #return []
+                        end
 
-                               piece = rotate_tile piece
-                       end
-
-                       # If we reach here, that means we have not found an optimal grid, so return nada
-                       #return []
+                        # for each valid placement, discover a new path from there
+                        # MAKE SURE TO n=+1
+                        for new_grid in potential_placement
+                                potential_paths << backtrack(array, new_grid, n+1, r, c).map(&:clone)
+                        end
                end
-               potential_max = potential_paths[0] if potential_paths != 0 else [][0]
+               potential_max = [grid,0]
+               #potential_max = potential_paths[0] if potential_paths != 0
                potential_paths.each do | possible_grid |
                         potential_max = possible_grid if possible_grid[1] > potential_max[1]
                end
 
-               grid = potential_max
+               grid = potential_max[0]
         end
         
         return [grid, n]
@@ -197,5 +261,5 @@ end
 grid = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
 grid = place(grid, x_tile, 0, 0)
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles, grid,0, 0, 0, x_tile)[0]
+print_matrix backtrack(puzzle_tiles, grid,0, 0, 0)[0]
 print "Finished"
