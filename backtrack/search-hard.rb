@@ -180,21 +180,22 @@ def find_free_space(grid, row, col)
      return free_tiles
 end
 
-def backtrack(array, grid, n, row, col)
-        print n
+def backtrack(array, grid, row, col)
+        print array
         # Should return the grid if we've explored all puzzle pieces for this path
-        if n == array.length # FIX LIMIT
+        if array.length == 0 # FIX LIMIT
                 print "it's done"
-                return [grid, n]
+                return [grid, array]
         end
 
         # Update the grid without the selected tilepiece
-        array.drop(n).each do | jigsaw |
+        array.each_with_index do | jigsaw, jigsaw_index |
               piece = jigsaw.map(&:clone)
               # There's going to be another type of iterator to go through
               # All the adjacent free spaces of the current tile we are on
               # It shouldn't be just free space from the previous tile, but all of them
               position_list = find_free_space(grid, row, col)
+              binding.pry
               potential_paths = []
 
               for r, c in position_list
@@ -247,21 +248,23 @@ def backtrack(array, grid, n, row, col)
                         # for each valid placement, discover a new path from there
                         # MAKE SURE TO n=+1
                         for new_grid in potential_placement
-                                potential_paths << backtrack(array, new_grid, n+1, r, c).map(&:clone)
+                                array_copy = array.map(&:clone)
+                                array_copy.delete_at jigsaw_index
+                                potential_paths << backtrack(array_copy, new_grid, r, c).map(&:clone)
                         end
                end
-               potential_max = [grid,0]
+               potential_max = [grid, array]
                #potential_max = potential_paths[0] if potential_paths != 0
+               binding.pry 
                potential_paths.each do | possible_grid |
-                        potential_max = possible_grid if possible_grid[1] > potential_max[1]
+                        potential_max = possible_grid if possible_grid[1].length > potential_max[1].length
                end
                
-                
                grid = potential_max[0]
         end
 
         #binding.pry
-        return [grid, n]
+        return [grid, array]
 end
 
 # Start off with an empty grid of 11 columns per row
@@ -272,9 +275,8 @@ grid = [[12, 12, 4, 4,  4, 10, 10, 10, 10, 7, 7],
         [6, 6,  1,   1, 1, 11, 0,   0, 0,  0, 0],
         [6, 6,  6,   1, 11, 11, 0,  0, 0,  0, 0]] 
 
-puzzle_tiles = [curve_L_tile, short_L_tile, lshort_L_tile, cube_s_tile,
-x_tile, long_L_tile, stick_tile, m_tile, mosin_tile, zzag_tile, small_L_tile, cube_tile ]
+puzzle_tiles = [mosin_tile, zzag_tile, small_L_tile, cube_tile ]
 
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles, grid, 8, 0, 0)[0]
+print_matrix backtrack(puzzle_tiles, grid, 0, 0)[0]
 print "Finished"
