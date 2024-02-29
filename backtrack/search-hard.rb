@@ -117,7 +117,6 @@ end
 
 def map_all_tiles(grid)
          all_positions = []
-         # binding.pry
          grid.each_with_index do | x , r|
                 x.each_with_index do | y , c |
                       if y != 0
@@ -132,7 +131,7 @@ end
 def adjust(piece, r, c, pr, pc)
         new_piece = Array.new(piece.length) { Array.new(piece[0].length, 0) }
         if r == pr and c == pc
-                return new_piece
+                return piece
         end
         # Need to subtract or add depending on direction
         
@@ -148,7 +147,7 @@ def adjust(piece, r, c, pr, pc)
                         check_bounds1 = (calc_x > new_piece.length or calc_x < 0)
                         check_bounds2 = (calc_y > new_piece[0].length or calc_y < 0)
                         return [] if check_bounds1 or check_bounds2
-                        
+                       
                         new_piece[calc_x][calc_y] = y
 
                 end
@@ -183,7 +182,6 @@ def find_free_space(grid, row, col)
      return free_tiles
 end
 
-
 def backtrack(array, grid, n, row, col)
 
         # Should return the grid if we've explored all puzzle pieces for this path
@@ -205,13 +203,22 @@ def backtrack(array, grid, n, row, col)
                                rotation_count = 0
                                flipped = false
                                while rotation_count < 4
-                                       
+                                      
                                        # Fix tile position to be as adjacent as possible with the prev tile
-                                       readjusted_piece = adjust(piece, r, c, pr, pc) 
+                                       readjusted_piece = adjust(piece, r, c, pr, pc)
                                        if readjusted_piece == []
-                                                break
-                                       end
+                                                rotation_count += 1
+                                                if rotation_count == 4 and not flipped
+                                                        rotation_count = 0
+                                                        piece = flip piece
+                                                        flipped = true 
+                                                        next
+                                                end
 
+                                                piece = rotate_tile piece     
+                                                next
+                                       end
+ 
                                        # We need to figure out a way to recalibrate the piece so that
                                        # it's exactly on the free spot point, shift left right top down whatever
                                        # Everything will crumble if it can't close the spaces together
