@@ -94,7 +94,7 @@ end
 def out_of_bounds(grid, tile, row, col)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
-                        return true if isinvalid(x+row, y+col)
+                        return true if (isinvalid(x+row, y+col) and c != 0)
                 end
         end
 
@@ -113,18 +113,6 @@ def map_tiles(row, col, piece)
      return piece_true_pos
 end
 
-def map_all_tiles(grid)
-         all_positions = []
-         grid.each_with_index do | x , r|
-                x.each_with_index do | y , c |
-                      if y != 0
-                                all_positions << [ r, c ]
-                      end
-                end
-         end
-
-         return all_positions
-end
 
 def adjust(piece, r, c, pr, pc)
         new_piece = Array.new(piece.length) { Array.new(piece[0].length, 0) }
@@ -160,31 +148,39 @@ def find_free_space(grid, row, col)
      # Using map_tile, we will check every direction for each position to
      # see if there is free space adjacent to the current tile
      
-     piece_true_pos = map_all_tiles(grid)
+     piece_true_pos = []
 
-     # Find a way to locate our tile, center the row and col to any point of our tile
-     # screw you
+     grid.each_with_index do | x , r |
+        x.each_with_index do | y , c |
+                if y == 0
+                        piece_true_pos << [r,c]
+                end
+        end
+     end
+
+     # only select positions that are valid and next to occupied tiles
      
+
      free_tiles = []
      # This logic will produce duplicate positions that are unecessary, please fix somehow
-     already_checked = Array.new(GRID_ROW) { Array.new(GRID_COLUMN, 0) }
      for r, c in piece_true_pos
                next if r == nil or c == nil
                potential_spots = [[r+1, c],[r, c+1],[r-1, c],[r, c-1]]
                for pr, pc in potential_spots
-                       next if isinvalid(pr, pc) or grid[pr][pc] != 0 or already_checked[pr][pc] == 1
-                       free_tiles << [pr, pc]
-                       already_checked[pr][pc] = 1 # Marked discovered
+                       next if isinvalid(pr, pc) 
+                       if grid[pr][pc] != 0
+                                free_tiles << [r, c]
+                                break
+                       end
                end
      end
      return free_tiles
 end
 
 def backtrack(array, grid, row, col)
-        print array
+        print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
         if array.length == 0 # FIX LIMIT
-                print "it's done"
                 return [grid, array]
         end
 
@@ -195,12 +191,10 @@ def backtrack(array, grid, row, col)
               # All the adjacent free spaces of the current tile we are on
               # It shouldn't be just free space from the previous tile, but all of them
               position_list = find_free_space(grid, row, col)
-              binding.pry
               potential_paths = []
 
               for r, c in position_list
                        potential_placement = []
-                       #binding.pry if piece[2][0] == 4
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
                                flipped = false
@@ -250,20 +244,29 @@ def backtrack(array, grid, row, col)
                         for new_grid in potential_placement
                                 array_copy = array.map(&:clone)
                                 array_copy.delete_at jigsaw_index
-                                potential_paths << backtrack(array_copy, new_grid, r, c).map(&:clone)
+                                #binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
+  #[3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
+  #[3, 3, 3, 1, 4, 11, 0, 0, 9, 7, 7],
+  #[6, 6, 1, 1, 1, 11, 0, 0, 0, 0, 0],
+  #[6, 6, 6, 1, 11, 11, 0, 0, 0, 0, 0]]
+                                binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
+   [3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
+   [3, 3, 3, 1, 4, 11, 2, 2, 9, 7, 7],
+   [6, 6, 1, 1, 1, 11, 0, 2, 2, 0, 0],
+   [6, 6, 6, 1, 11, 11, 0, 0, 2, 0, 0]]
+                                potential_paths << backtrack(array_copy, new_grid, r, c)
                         end
                end
                potential_max = [grid, array]
                #potential_max = potential_paths[0] if potential_paths != 0
-               binding.pry 
                potential_paths.each do | possible_grid |
-                        potential_max = possible_grid if possible_grid[1].length > potential_max[1].length
+                        potential_max = possible_grid if possible_grid[1].length < potential_max[1].length
                end
                
                grid = potential_max[0]
+               #binding.pry
         end
 
-        #binding.pry
         return [grid, array]
 end
 
