@@ -245,16 +245,17 @@ def backtrack(array, grid, row, col)
                                 array_copy = array.map(&:clone)
                                 array_copy.delete_at jigsaw_index
                                 #binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
-  #[3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
-  #[3, 3, 3, 1, 4, 11, 0, 0, 9, 7, 7],
-  #[6, 6, 1, 1, 1, 11, 0, 0, 0, 0, 0],
-  #[6, 6, 6, 1, 11, 11, 0, 0, 0, 0, 0]]
-                                binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
-   [3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
-   [3, 3, 3, 1, 4, 11, 2, 2, 9, 7, 7],
-   [6, 6, 1, 1, 1, 11, 0, 2, 2, 0, 0],
-   [6, 6, 6, 1, 11, 11, 0, 0, 2, 0, 0]]
-                                potential_paths << backtrack(array_copy, new_grid, r, c)
+                                 # [3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
+                                 # [3, 3, 3, 1, 4, 11, 2, 2, 9, 7, 7],
+                                 # [6, 6, 1, 1, 1, 11, 8, 2, 2, 0, 0],
+                                 # [6, 6, 6, 1, 11, 11, 8, 8, 2, 0, 0]]
+                                   
+                                   #binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
+                                  # [3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
+                                  # [3, 3, 3, 1, 4,    11, 0, 0, 9, 7, 7],
+                                  # [6, 6, 1, 1, 1,    11, 0, 0, 0, 0, 0],
+                                  # [6, 6, 6, 1, 11,   11, 0, 0, 0, 0, 0]]
+                                   potential_paths << backtrack(array_copy, new_grid, r, c)
                         end
                end
                potential_max = [grid, array]
@@ -264,6 +265,7 @@ def backtrack(array, grid, row, col)
                end
                
                grid = potential_max[0]
+               array = potential_max[1]
                #binding.pry
         end
 
