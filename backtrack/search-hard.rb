@@ -149,9 +149,9 @@ def find_free_space(grid)
      return free_tiles
 end
 
-def log_level(array,grid,piece,r,c, level)
+def log_level(array,grid,piece,r,c)
         puts "-------------------------------------------"
-        puts "LOGGING RECURSION LEVEL TO BE #{level.to_s}"
+        puts "LOGGING RECURSION LEVEL TO BE #{array.length}"
         puts "FOLLOWING GRID IS "
         print_matrix grid
         puts "FOLLOWING ARRAY IS "
@@ -162,7 +162,7 @@ def log_level(array,grid,piece,r,c, level)
         
 end
 
-def backtrack(array, grid, row, col, level)
+def backtrack(array, grid, row, col)
         print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
         #  binding.pry if array.length == 1
@@ -188,7 +188,7 @@ def backtrack(array, grid, row, col, level)
               potential_paths = []
               for r, c in position_list
                        # binding.pry if level == 4
-                       #log_level(array,grid,piece,r,c, level)
+                       #log_level(array,grid,piece,r,c)
                        potential_placement = []
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
@@ -233,7 +233,7 @@ def backtrack(array, grid, row, col, level)
                                         [9, 9,  2,   8,  8, 0, 0, 0,  0,  0, 0],
                                         [9, 6,  6,   6, 11, 11,11,11, 0,  0, 0],
                                         [9, 6,  6,  10, 10, 10,10,11, 0,  0, 0]]
-                                  potential_paths << backtrack(array_copy, new_grid, r, c, level+1)
+                                  potential_paths << backtrack(array_copy, new_grid, r, c)
                         end
                end
                 
@@ -312,7 +312,7 @@ puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, m_tile ]
 puzzle_tilestest3 =  [long_L_tile, lshort_L_tile, cube_tile, m_tile, x_tile ]
 
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tilestest2, gridtest, 0, 0, 0)[0]
+print_matrix backtrack(puzzle_tilestest2, gridtest, 0, 0)[0]
 print "Finished"
 
 
