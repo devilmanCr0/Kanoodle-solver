@@ -152,6 +152,12 @@ end
 def backtrack(array, grid, row, col)
         #print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
+        #  binding.pry if array.length == 1
+        # maybe we should have a condition that checks if there is any more avaliable space?
+        # if there isn't.. don't try to run this entire path again
+        # There is a bug where depending on the arrangement of the array, it will take 
+        # a long long long long long time to solve - try fixing next time but im out
+        #if array.length == 1 and no_more_viable_space(grid, array)
         if array.length == 0  # FIX LIMIT
                 
                 print_matrix grid
@@ -170,7 +176,6 @@ def backtrack(array, grid, row, col)
               potential_paths = []
               for r, c in position_list
                        potential_placement = []
-                       binding.pry if jigsaw[0][0]==11
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
                                flipped = false
@@ -253,14 +258,14 @@ grid2 = [[12, 12, 4, 4,  4, 10, 10, 10, 10, 7, 7],
         # Easy
 puzzle_tiles2 = [mosin_tile, zzag_tile, small_L_tile, cube_tile ]
         
-        # Difficult
+        # FINAL
 grid1 = [[2, 2,  3,   3,  3, 0, 0, 0, 0, 0, 0],
         [9, 2,  2,   8,  3, 0, 0, 0, 0,  0, 0],
         [9, 9,  2,   8,  8, 0, 0, 0, 0,  0, 0],
         [9, 6,  6,   6,  0, 0, 0, 0, 0,  0, 0],
         [9, 6,  6,  10, 10, 10, 10,  0, 0,  0, 0]] 
 
-        # Difficult
+        # FINAL
 puzzle_tiles1 = [long_L_tile, lshort_L_tile, curve_L_tile, cube_tile, m_tile, x_tile ]
 
 
@@ -274,11 +279,20 @@ grid3 =[[2, 2,  3,   3,  3, 7, 7, 0,  0,  0, 0],
         # Difficult
 puzzle_tiles3 = [x_tile, lshort_L_tile, curve_L_tile, cube_tile]
 
+        # test
+gridtest = [[2, 2,  3,   3,  3, 0, 0, 0, 0, 0,  0],
+            [9, 2,  2,   8,  3, 0, 0, 0, 0, 12, 0],
+            [9, 9,  2,   8,  8, 0, 0, 0, 12,12, 0],
+            [9, 6,  6,   6,  0, 0, 0, 0, 12, 0, 0],
+            [9, 6,  6,  10, 10, 10,10,0, 12, 0, 0]] 
 
+        # test
+puzzle_tilestest = [m_tile, x_tile, long_L_tile, lshort_L_tile ]
+puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, x_tile ]
 
 is_set = [[0]]
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
+print_matrix backtrack(puzzle_tilestest2, gridtest, 0, 0)[0]
 print "Finished"
 
 
