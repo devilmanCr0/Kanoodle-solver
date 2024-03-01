@@ -157,6 +157,7 @@ def backtrack(array, grid, row, col)
         # if there isn't.. don't try to run this entire path again
         # There is a bug where depending on the arrangement of the array, it will take 
         # a long long long long long time to solve - try fixing next time but im out
+        
         #if array.length == 1 and no_more_viable_space(grid, array)
         if array.length == 0  # FIX LIMIT
                 
@@ -292,7 +293,7 @@ puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, x_tile ]
 
 is_set = [[0]]
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tilestest2, gridtest, 0, 0)[0]
+print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
 print "Finished"
 
 
