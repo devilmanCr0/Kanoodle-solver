@@ -150,9 +150,9 @@ def find_free_space(grid)
 end
 
 def backtrack(array, grid, row, col)
-        print array.length
+        #print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
-        if array.length == 0 # FIX LIMIT
+        if array.length == 0  # FIX LIMIT
                 
                 print_matrix grid
                 exit
@@ -170,6 +170,7 @@ def backtrack(array, grid, row, col)
               potential_paths = []
               for r, c in position_list
                        potential_placement = []
+                       binding.pry if jigsaw[0][0]==11
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
                                flipped = false
@@ -208,11 +209,11 @@ def backtrack(array, grid, row, col)
                                 array_copy = array.map(&:clone)
                                 array_copy.delete_at jigsaw_index
                                   
-                                   #binding.pry if new_grid == [[12, 12, 4, 4, 4, 10, 10, 10, 10, 7, 7],
-                                  # [3, 12, 12, 12, 4, 11, 9, 9, 9, 9, 7],
-                                  # [3, 3, 3, 1, 4,    11, 0, 0, 9, 7, 7],
-                                  # [6, 6, 1, 1, 1,    11, 0, 0, 0, 0, 0],
-                                  # [6, 6, 6, 1, 11,   11, 0, 0, 0, 0, 0]]
+                                   binding.pry if new_grid == [[2, 2,  3,   3,  3, 0, 0, 0,  0,  0, 0],
+                                        [9, 2,  2,   8,  3, 0, 0, 0,  0,  0, 0],
+                                        [9, 9,  2,   8,  8, 0, 0, 0,  0,  0, 0],
+                                        [9, 6,  6,   6, 11, 11,11,11, 0,  0, 0],
+                                        [9, 6,  6,  10, 10, 10,10,11, 0,  0, 0]]
                                   potential_paths << backtrack(array_copy, new_grid, r, c)
                         end
                end
@@ -233,7 +234,7 @@ def backtrack(array, grid, row, col)
         max.each do | maxest |
                absolute_max = maxest if maxest[1].length < absolute_max[1].length
         end
-        
+         
         grid = absolute_max[0]
         array = absolute_max[1]
          
@@ -275,7 +276,7 @@ puzzle_tiles3 = [x_tile, lshort_L_tile, curve_L_tile, cube_tile]
 
 
 
-
+is_set = [[0]]
 # Provide an initial piece and place it anywhere within the grid
 print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
 print "Finished"
