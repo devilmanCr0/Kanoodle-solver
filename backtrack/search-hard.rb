@@ -55,25 +55,25 @@ def flip(tile)
        return flipped_tile
 end
 
-def place(grid, tile, row, col)
+def place(grid, tile, row, col, dx, dc)
         new_grid = grid.map(&:clone)
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
                         next if c == 0
-                        new_grid[x+row][y+col] = c
+                        new_grid[x+row-dx][y+col-dc] = c
                 end
         end
         return new_grid
 end
 
-def does_overlap(grid, tile, row, col)
+def does_overlap(grid, tile, row, col, dr, dc)
         
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
                         # Checks if the relative position of tile
                         # and global position of grid is occupied
                         # dirty bug here
-                        if c != 0 and grid[x+row][y+col] != 0
+                        if c != 0 and grid[x+row-dr][y+col-dc] != 0
                                 return true
                         end
                 end
@@ -91,10 +91,12 @@ def isinvalid(row, col)
         return false
 end
 
-def out_of_bounds(grid, tile, row, col)
+def out_of_bounds(grid, tile, row, col, dx, dc)
+        
+
         tile.each_with_index do | r, x |
                 r.each_with_index do | c, y |
-                        return true if (isinvalid(x+row, y+col) and c != 0)
+                        return true if (isinvalid(x+row-dx, y+col-dc) and c != 0)
                 end
         end
 
@@ -113,35 +115,6 @@ def map_tiles(row, col, piece)
      return piece_true_pos
 end
 
-
-def adjust(piece, r, c, pr, pc)
-        new_piece = Array.new(piece.length) { Array.new(piece[0].length, 0) }
-        if r == pr and c == pc
-                return piece
-        end
-        # Need to subtract or add depending on direction
-        
-        difference_r = pr-r         
-        difference_c = pc-c
-        piece.each_with_index do | x, xr |
-                x.each_with_index do | y, yc |
-                        next if y == 0
-                        
-                        calc_x = xr - difference_r
-                        calc_y = yc - difference_c
-                        
-                        check_bounds1 = (calc_x > new_piece.length or calc_x < 0)
-                        check_bounds2 = (calc_y > new_piece[0].length or calc_y < 0)
-                        return [] if check_bounds1 or check_bounds2
-                       
-                        new_piece[calc_x][calc_y] = y
-
-                end
-        end
-
-        
-        return new_piece
-end
 
 def find_free_space(grid)
      
@@ -180,6 +153,9 @@ def backtrack(array, grid, row, col)
         print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
         if array.length == 0 # FIX LIMIT
+                
+                print_matrix grid
+                exit
                 return [grid, array]
         end
 
@@ -193,34 +169,21 @@ def backtrack(array, grid, row, col)
               position_list = find_free_space(grid)
               potential_paths = []
               for r, c in position_list
-                       binding.pry if r == 1 and c == 6
                        potential_placement = []
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
                                flipped = false
                                while rotation_count < 4
                                       
-                                       # Fix tile position to be as adjacent as possible with the prev tile
-                                       readjusted_piece = adjust(piece, r, c, pr, pc)
-                                       if readjusted_piece == []
-                                                rotation_count += 1
-                                                if rotation_count == 4 and not flipped
-                                                        rotation_count = 0
-                                                        piece = flip piece
-                                                        flipped = true 
-                                                        next
-                                                end
-
-                                                piece = rotate_tile piece     
-                                                next
-                                       end
- 
+                                       diff_r = pr-r         
+                                       diff_c = pc-c
+                                       
                                        # We need to figure out a way to recalibrate the piece so that
                                        # it's exactly on the free spot point, shift left right top down whatever
                                        # Everything will crumble if it can't close the spaces together
-                                       if not out_of_bounds(grid, readjusted_piece, r, c)
-                                              if not does_overlap(grid, readjusted_piece, r, c)
-                                                        potential_placement << place(grid, readjusted_piece, r, c)
+                                       if not out_of_bounds(grid, piece, r, c, diff_r, diff_c)
+                                              if not does_overlap(grid, piece, r, c, diff_r, diff_c)
+                                                        potential_placement << place(grid, piece, r, c, diff_r, diff_c)
                                               end
                                        end
 
@@ -268,12 +231,12 @@ def backtrack(array, grid, row, col)
          
         absolute_max = [ grid, array ] 
         max.each do | maxest |
-               absolute_max = maxest if maxest[1].length < absolute_max[1].length 
+               absolute_max = maxest if maxest[1].length < absolute_max[1].length
         end
         
         grid = absolute_max[0]
         array = absolute_max[1]
-        
+         
         return [grid, array]
 end
 
@@ -314,7 +277,7 @@ puzzle_tiles3 = [x_tile, lshort_L_tile, curve_L_tile, cube_tile]
 
 
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles3, grid3, 0, 0)[0]
+print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
 print "Finished"
 
 
