@@ -149,14 +149,25 @@ def find_free_space(grid)
      return free_tiles
 end
 
-def backtrack(array, grid, row, col)
-        #print array.length
+def log_level(array,grid,piece,r,c, level)
+        puts "-------------------------------------------"
+        puts "LOGGING RECURSION LEVEL TO BE #{level.to_s}"
+        puts "FOLLOWING GRID IS "
+        print_matrix grid
+        puts "FOLLOWING ARRAY IS "
+        print_matrix array
+        puts "PIECE FOR THIS GRID FOR POSITION #{r.to_s}#{c.to_s}| IS "
+        print_matrix piece
+        puts "-------------------------------------------"
+        
+end
+
+def backtrack(array, grid, row, col, level)
+        print array.length
         # Should return the grid if we've explored all puzzle pieces for this path
         #  binding.pry if array.length == 1
         # maybe we should have a condition that checks if there is any more avaliable space?
         # if there isn't.. don't try to run this entire path again
-        # There is a bug where depending on the arrangement of the array, it will take 
-        # a long long long long long time to solve - try fixing next time but im out
         
         #if array.length == 1 and no_more_viable_space(grid, array)
         if array.length == 0  # FIX LIMIT
@@ -176,6 +187,8 @@ def backtrack(array, grid, row, col)
               position_list = find_free_space(grid)
               potential_paths = []
               for r, c in position_list
+                       # binding.pry if level == 4
+                       #log_level(array,grid,piece,r,c, level)
                        potential_placement = []
                        for pr, pc in map_tiles(r, c, piece)
                                rotation_count = 0
@@ -220,10 +233,17 @@ def backtrack(array, grid, row, col)
                                         [9, 9,  2,   8,  8, 0, 0, 0,  0,  0, 0],
                                         [9, 6,  6,   6, 11, 11,11,11, 0,  0, 0],
                                         [9, 6,  6,  10, 10, 10,10,11, 0,  0, 0]]
-                                  potential_paths << backtrack(array_copy, new_grid, r, c)
+                                  potential_paths << backtrack(array_copy, new_grid, r, c, level+1)
                         end
                end
-               potential_max = [grid, array]
+                
+                # There is nothing else we can do if we find no potential paths
+               if potential_paths.length == 0
+                        array << [] # add junk to up the number and filter this one out
+                        return [grid, array]
+               end
+
+               potential_max = [potential_paths[0][0], potential_paths[0][1]]
                #potential_max = potential_paths[0] if potential_paths != 0
                potential_paths.each do | possible_grid |
                         potential_max = possible_grid if possible_grid[1].length < potential_max[1].length
@@ -235,8 +255,7 @@ def backtrack(array, grid, row, col)
                #array = potential_max[1]
                max << potential_max
         end
-         
-        absolute_max = [ grid, array ] 
+        absolute_max = [ max[0][0], max[0][1] ] 
         max.each do | maxest |
                absolute_max = maxest if maxest[1].length < absolute_max[1].length
         end
@@ -289,11 +308,11 @@ gridtest = [[2, 2,  3,   3,  3, 0, 0, 0, 0, 0,  0],
 
         # test
 puzzle_tilestest = [m_tile, x_tile, long_L_tile, lshort_L_tile ]
-puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, x_tile ]
+puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, m_tile ]
+puzzle_tilestest3 =  [long_L_tile, lshort_L_tile, cube_tile, m_tile, x_tile ]
 
-is_set = [[0]]
 # Provide an initial piece and place it anywhere within the grid
-print_matrix backtrack(puzzle_tiles1, grid1, 0, 0)[0]
+print_matrix backtrack(puzzle_tilestest2, gridtest, 0, 0, 0)[0]
 print "Finished"
 
 
