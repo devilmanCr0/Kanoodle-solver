@@ -281,13 +281,13 @@ puzzle_tilestest2 = [x_tile, long_L_tile, lshort_L_tile, m_tile ]
 puzzle_tilestest3 =  [long_L_tile, lshort_L_tile, cube_tile, m_tile, x_tile ]
 
 # Final test
-gridtest2 = [[2, 2,  3,   3,  3, 0, 0, 0, 0, 0,  0],
-            [9, 2,  2,   8,  3, 0, 0, 0, 0, 0, 0],
-            [9, 9,  2,   8,  8, 0, 0, 0, 0, 0, 0],
-            [9, 6,  6,   6,  0, 0, 0, 0, 0, 0, 0],
-            [9, 6,  6,  10, 10, 10,10,0, 0, 0, 0]] 
+gridtest2 =[[1, 1,  1,   1,  0, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  0, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 1, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 1, 1, 1, 1, 0, 0]] 
 
-puzzle_tilestest3 =  [curve_L_tile, long_L_tile, lshort_L_tile, cube_tile, m_tile, x_tile ]
+puzzle_tilestest3 =  [zzag_tile, m_tile, lshort_L_tile, small_L_tile, cube_tile, curve_L_tile ]
 
 
 
