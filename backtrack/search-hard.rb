@@ -37,11 +37,13 @@ end
 def rotate_tile(tile)
         # annaershova.github.io/blog/2015/07/22/how-to-rotate-a-matrix-in-ruby/
         rotated_tile = []
+        flipped_tile = []
         tile.transpose.each do |x|
                 rotated_tile << x.reverse
+                flipped_tile << x
         end
 
-        return rotated_tile
+        return [rotated_tile, flipped_tile]
 end
 
 # Will flip a tile 
@@ -108,11 +110,12 @@ def map_tiles(row, col, piece)
      piece.each_with_index do |x, r|
         x.each_with_index do |y, c|
                 if y != 0
-                        piece_true_pos << [row+r, col+c]
+                        return [row+r, col+c]
+
                 end
         end
      end
-     return piece_true_pos
+     return [] # Not possible
 end
 
 
@@ -192,14 +195,18 @@ def backtrack(array, grid, row, col)
                        rotation_count = 0
                        flipped = false
                        while rotation_count < 4
-                               crap = map_tiles(r, c, piece)[0] # Fix this!
-		               pr = crap[0]
-		               pc = crap[1]
-                       
+                               piece, flipped_piece = rotate_tile piece
+                                
+                               #binding.pry
+                               placement = map_tiles(r, c, piece) # Fix this!
+	                       placement_flipped = map_tiles(r, c, flipped_piece)	               
+        
+                               diff_r = placement[0]-r         
+                               diff_c = placement[1]-c
+                              
+                               diff_flipped_r = placement_flipped[0]-r
+                               diff_flipped_c = placement_flipped[1]-c
 
-                               diff_r = pr-r         
-                               diff_c = pc-c
-                               
                                # We need to figure out a way to recalibrate the piece so that
                                # it's exactly on the free spot point, shift left right top down whatever
                                # Everything will crumble if it can't close the spaces together
@@ -209,15 +216,13 @@ def backtrack(array, grid, row, col)
                                       end
                                end
 
-                               rotation_count += 1
-                               if rotation_count == 4 and not flipped
-                                       rotation_count = 0
-                                       piece = flip piece
-                                       flipped = true 
-                                       next
+                               if not out_of_bounds(grid,  flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
+                                      if not does_overlap(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
+                                                potential_placement << place(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
+                                      end
                                end
 
-                               piece = rotate_tile piece
+                               rotation_count += 1
                        end
 
                        # If we reach here, that means we have not found an optimal grid, so return nada
@@ -289,10 +294,16 @@ gridtest2 =[[1, 1,  1,   1,  0, 0, 0, 0, 0, 0, 0],
 
 puzzle_tilestest3 =  [zzag_tile, m_tile, lshort_L_tile, small_L_tile, cube_tile, curve_L_tile ]
 
+gridtest3 =[[1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  0, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
+            [1, 1,  1,   1,  1, 1, 0, 0, 0, 0, 0]] 
 
-
+puzzle_tile = [ curve_L_tile, lshort_L_tile, zzag_tile, cube_s_tile, mosin_tile, x_tile ] 
 
 # Provide an initial piece and place it anywhere within the grid
+
 print_matrix backtrack(puzzle_tilestest3, gridtest2, 0, 0)[0]
 print "Finished"
 
