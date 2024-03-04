@@ -74,8 +74,7 @@ def does_overlap(grid, tile, row, col, dr, dc)
                 r.each_with_index do | c, y |
                         # Checks if the relative position of tile
                         # and global position of grid is occupied
-                        # dirty bug here
-                        if c != 0 and grid[x+row-dr][y+col-dc] != 0
+                        if c != 0 and (isinvalid(x+row-dr, y+col-dc) or grid[x+row-dr][y+col-dc] != 0)
                                 return true
                         end
                 end
@@ -210,16 +209,13 @@ def backtrack(array, grid, row, col)
                                # We need to figure out a way to recalibrate the piece so that
                                # it's exactly on the free spot point, shift left right top down whatever
                                # Everything will crumble if it can't close the spaces together
-                               if not out_of_bounds(grid, piece, r, c, diff_r, diff_c)
-                                      if not does_overlap(grid, piece, r, c, diff_r, diff_c)
-                                                potential_placement << place(grid, piece, r, c, diff_r, diff_c)
-                                      end
+                               # FIX BROKEN!!!
+                               if not does_overlap(grid, piece, r, c, diff_r, diff_c)
+                                      potential_placement << place(grid, piece, r, c, diff_r, diff_c)
                                end
 
-                               if not out_of_bounds(grid,  flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
-                                      if not does_overlap(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
-                                                potential_placement << place(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
-                                      end
+                               if not does_overlap(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
+                                      potential_placement << place(grid, flipped_piece, r, c, diff_flipped_r, diff_flipped_c)
                                end
 
                                rotation_count += 1
@@ -292,7 +288,7 @@ gridtest2 =[[1, 1,  1,   1,  0, 0, 0, 0, 0, 0, 0],
             [1, 1,  1,   1,  1, 1, 0, 0, 0, 0, 0],
             [1, 1,  1,   1,  1, 1, 1, 1, 1, 0, 0]] 
 
-puzzle_tilestest3 =  [zzag_tile, m_tile, lshort_L_tile, small_L_tile, cube_tile, curve_L_tile ]
+puzzle_tilestest4 =  [zzag_tile, m_tile, lshort_L_tile, small_L_tile, cube_tile, curve_L_tile ]
 
 gridtest3 =[[1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
             [1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
@@ -300,11 +296,11 @@ gridtest3 =[[1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
             [1, 1,  1,   1,  1, 0, 0, 0, 0, 0, 0],
             [1, 1,  1,   1,  1, 1, 0, 0, 0, 0, 0]] 
 
-puzzle_tile = [ curve_L_tile, lshort_L_tile, zzag_tile, cube_s_tile, mosin_tile, x_tile ] 
+puzzle_tilestest5 = [ curve_L_tile, lshort_L_tile, zzag_tile, cube_s_tile, mosin_tile, x_tile ] 
 
 # Provide an initial piece and place it anywhere within the grid
 
-print_matrix backtrack(puzzle_tilestest3, gridtest2, 0, 0)[0]
+print_matrix backtrack(puzzle_tilestest3, gridtest, 0, 0)[0]
 print "Finished"
 
 
